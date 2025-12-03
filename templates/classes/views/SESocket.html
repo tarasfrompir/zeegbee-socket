@@ -1,0 +1,181 @@
+<link rel="stylesheet" href="/3rdparty/fontawesome/css/all.css">
+<script>
+function setInsertData_%.object_id%() {
+	if(window.intervalUpdateDate_%.object_id%) {
+		window.clearInterval(intervalUpdateDate_%.object_id%);
+	}
+	
+	var currentTime = parseInt(new Date().getTime()/1000);
+	var sID = '%.object_id%';
+	var sDATA = '%.updated%';
+	var diff = currentTime-sDATA;
+
+ 	if(diff <= -21) {
+		beautyText = '<#LANG_DEVICES_PASSED_INCORRECT_TIME#>';
+		$('.updatedText-JS-' + sID).text(beautyText);
+	} else if(diff >= -20 && diff <= 10) {
+		//Только что
+		beautyText = '<#LANG_DEVICES_PASSED_NOW#>';
+		$('.updatedText-JS-' + sID).text(beautyText);
+		
+		window.intervalUpdateDate_%.object_id% = setInterval(function() {
+			setInsertData_%.object_id%();
+		}, 1000);
+	} else if(diff > 10 && diff <= 600) {
+		beautyText = secondsToHms(diff, '', '<#LANG_DEVICES_PASSED_NEW_MINUTES_AGO#>', '<#LANG_DEVICES_PASSED_NEW_SECONDS_AGO#>') + ' <#LANG_DEVICES_PASSED_AGO#>';
+		$('.updatedText-JS-' + sID).text(beautyText);
+		
+		window.intervalUpdateDate_%.object_id% = setInterval(function() {
+			var currentTime = parseInt(new Date().getTime()/1000);
+			var diff = currentTime-sDATA;
+
+			beautyText = secondsToHms(diff, '', '<#LANG_DEVICES_PASSED_NEW_MINUTES_AGO#>', '<#LANG_DEVICES_PASSED_NEW_SECONDS_AGO#>') + ' <#LANG_DEVICES_PASSED_AGO#>';
+			$('.updatedText-JS-' + sID).text(beautyText);
+			
+			setInsertData_%.object_id%();
+		}, 1000);
+	} else if(diff > 600 && diff <= 7200) {
+		beautyText = secondsToHms(diff, '<#LANG_DEVICES_PASSED_NEW_HOURS_AGO#>', '<#LANG_DEVICES_PASSED_NEW_MINUTES_AGO#>', '') + ' <#LANG_DEVICES_PASSED_AGO#>';
+		$('.updatedText-JS-' + sID).text(beautyText);
+		
+		window.intervalUpdateDate_%.object_id% = setInterval(function() {
+			var currentTime = parseInt(new Date().getTime()/1000);
+			var diff = currentTime-sDATA;
+
+			beautyText = secondsToHms(diff, '<#LANG_DEVICES_PASSED_NEW_HOURS_AGO#>', '<#LANG_DEVICES_PASSED_NEW_MINUTES_AGO#>', '') + ' <#LANG_DEVICES_PASSED_AGO#>';
+			$('.updatedText-JS-' + sID).text(beautyText);
+			
+			setInsertData_%.object_id%();
+		}, 61000);
+	} else if(diff > 7200 && diff < 25200) {
+		beautyText = secondsToHms(diff, '<#LANG_DEVICES_PASSED_NEW_HOURS_AGO#>', '', '') + ' <#LANG_DEVICES_PASSED_AGO#>';
+		$('.updatedText-JS-' + sID).text(beautyText);
+			
+		window.intervalUpdateDate_%.object_id% = setInterval(function() {	
+			var currentTime = parseInt(new Date().getTime()/1000);
+			var diff = currentTime-sDATA;
+			
+			//Считаем и делаем красиво
+			beautyText = secondsToHms(diff, '<#LANG_DEVICES_PASSED_NEW_HOURS_AGO#>', '', '') + ' <#LANG_DEVICES_PASSED_AGO#>';
+			$('.updatedText-JS-' + sID).text(beautyText);
+			
+			setInsertData_%.object_id%();
+		}, 1800000);
+	} else {
+		//Дропаем интервал
+		if(window.intervalUpdateDate_%.object_id%) {
+			window.clearInterval(intervalUpdateDate_%.object_id%);
+		}
+		
+		timeConvertVar = timeConvert(sDATA);
+		currentTime = new Date();
+
+		if(currentTime.getFullYear() == timeConvertVar[2] && twoDigits(currentTime.getMonth()+1) == timeConvertVar[1] && (currentTime.getDate() - timeConvertVar[0]) == 0) {
+			beautyText = '<#LANG_DEVICES_PASSED_TODAY_IN#> ' + timeConvertVar[3] + ':' + timeConvertVar[4];
+		} else if(currentTime.getFullYear() == timeConvertVar[2] && twoDigits(currentTime.getMonth()+1) == timeConvertVar[1] && (currentTime.getDate() - timeConvertVar[0]) == 1) {
+			beautyText = '<#LANG_DEVICES_PASSED_YESTERDAY_IN#> ' + timeConvertVar[3] + ':' + timeConvertVar[4]; // + ':' + timeConvertVar[5]
+		} else {
+			beautyText = timeConvertVar[0] + '.' + timeConvertVar[1] + '.' + timeConvertVar[2] + ' ' + timeConvertVar[3] + ':' + timeConvertVar[4]; // + ':' + timeConvertVar[5]
+		}
+		
+		$('.updatedText-JS-' + sID).text(beautyText);
+	}
+}
+
+$(function() {
+	if(window.intervalUpdateDate_%.object_id%) {
+		window.clearInterval(intervalUpdateDate_%.object_id%);
+	}
+	
+	setInsertData_%.object_id%();
+	window.intervalUpdateDate_%.object_id% = setInterval(function() {	
+		setInsertData_%.object_id%();
+	}, 1000);
+}); 
+
+</script>
+
+<style>
+     .wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+</style>
+
+                
+<div class="device-widget controller loadtype_%.loadType%"
+     onClick='$(".icon%.object_id%_light").addClass("pressed");
+     setTimeout("$(\".icon%.object_id%_light\").removeClass(\"pressed\");",300);
+     callMethod("%.object_title%.switch");
+     $.get("<#ROOTHTML#>ajax/devices.html?op=clicked&object="+encodeURIComponent("%.object_title%"));'>
+    <div class="device-icon %.status|"off;on"% icon%.object_id%_light" id="icon%.object_id%_light" style='%.icon|"background-image:url(%.icon%)"%'></div>
+</div>
+
+
+<div class="device-header" onclick="var url=('<#ROOTHTML#>pChart/?p=%.object_title%'+'.status&op=log&subop=24h&minimal=1');parent.$.fancybox.open({ src: url, type: 'iframe',iframe:{preload:false} });return false;" >%.object_description% </div>
+    <div class="device-header" ><span class="updatedText-JS-%.object_id%" style="font-size: 11px;">...</span></div>
+    
+   <div class="wrapper">
+ 
+    <div class="device-header" style="text-align: left;" >
+       <span class="updatedCurentPower-JS-%.object_id%" ><i class="fa fa-bolt" aria-hidden="true"></i>  %.curent_power%  W</i></span>
+    </div>
+
+    <div class="device-header" style="text-align: left;display:%.power|"none;block"%"
+         onclick="var url=('<#ROOTHTML#>pChart/?p=%.object_title%'+'.power&op=log&subop=24h&minimal=1');parent.$.fancybox.open({ src: url, type: 'iframe',iframe:{preload:false} });return false;"><i class="fa-solid fa-plug"></i> Sum  %.power%  kW </div>
+    
+    <div class="device-header" style="text-align: left;display:%.voltage|"none;block"%">
+        <span class="updatedDeviceVoltage-JS-%.object_id%" onclick="var url=('<#ROOTHTML#>pChart/?p=%.object_title%'+'.voltage&op=log&subop=24h&minimal=1');parent.$.fancybox.open({ src: url, type: 'iframe',iframe:{preload:false} });return false;">
+    <i class="fa-solid fa-plug-circle-check"></i> %.voltage%  V  </span>
+    </div>
+    <div class="device-header" style="text-align: left;display:%.current|"none;block"%" > 
+    <i class="fa fa-bolt" aria-hidden="true"></i>  %.current% A  </div>
+    <div class="device-header" style="text-align: left;display:%.device_temperature|"none;block"%">
+        <span class="updatedDeviceTemperature-JS-%.object_id%"><i class="fa fa-thermometer-full" aria-hidden="true"></i> %.device_temperature% &deg; C</span>
+    </div>
+    
+ <div class="device-header" style="text-align: left;display:%.linkquality|"none;block"%">
+        <span class="updatedDeviceLinkQuolity-JS-%.object_id%"> <i class="fa-solid fa-house-signal"></i> %.linkquality% </span>
+    </div>
+    <div class="device-header" style="text-align: left;display:%.power_week|" none;block "%" ><i class="fa-solid fa-plug"></i>  7d - %.power_week% kW</div>
+    <div class="device-header" style="text-align: left;display:%.power_month|" none;block "%" ><i class="fa-solid fa-plug"></i>  31d - %.power_month% kW</div>
+ </div>
+ <script>
+	var sID = '%.object_id%';
+	var sDATA = '%.updated%';
+
+    var LinkQuolity = '%.linkquality%';
+    if(LinkQuolity < 50) {
+	    $('.updatedDeviceLinkQuolity-JS-' + sID).css('color', 'red');
+	} else if(LinkQuolity < 80 && LinkQuolity >= 50) {
+	    $('.updatedDeviceLinkQuolity-JS-' + sID).css('color', '#03d3fc');
+	}  else {
+	    $('.updatedDeviceLinkQuolity-JS-' + sID).css('color', 'green');
+	}
+	
+    var DevTemp = '%.device_temperature%';
+    if(DevTemp < 35) {
+	    $('.updatedDeviceTemperature-JS-' + sID).css('color', 'green');
+	} else if(DevTemp < 50 && DevTemp >= 35) {
+	    $('.updatedDeviceTemperature-JS-' + sID).css('color', '#fccf03');
+	}  else {
+	    $('.updatedDeviceTemperature-JS-' + sID).css('color', 'red');
+	}
+
+    var CPower= '%.curent_power%';
+    if(CPower >= 2000 ) {
+	    $('.updatedCurentPower-JS-' + sID).css('color', 'red');
+	} else {
+	    $('.updatedCurentPower-JS-' + sID).css('color', '#03fcb1');
+	}    
+	
+    var Voltage = '%.voltage%';
+    if(Voltage <= 205 || Voltage >= 245 ) {
+	    $('.updatedDeviceVoltage-JS-' + sID).css('color', 'red');
+	} else {
+	    $('.updatedDeviceVoltage-JS-' + sID).css('color', '#03fcb1');
+	}    
+    	
+
+</script>
